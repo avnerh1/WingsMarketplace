@@ -126,9 +126,9 @@ contract XWIPMarketplace is IMarketplace {
             require(tokenAmount >= listing.price, "Sent amount is smaller than NFT price in tokens");
 
             IBEP20 _token = IBEP20(token);  
-            _token.transferFrom(address(this), seller, tokenAmount * 95 / 100);
-            _token.transferFrom(address(this), marketWallet, tokenAmount / 100);
-            _token.transferFrom(address(this), teamWallet, tokenAmount / 100);            
+            _token.transfer(seller, tokenAmount * 95 / 100);
+            _token.transfer(marketWallet, tokenAmount / 100);
+            _token.transfer(teamWallet, tokenAmount / 100);           
         } else {
             require(msg.value >= listing.price, "Sent amount is smaller than NFT price");
             payable(seller).transfer(msg.value * 95 / 100);
