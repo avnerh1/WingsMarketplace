@@ -107,7 +107,6 @@ contract XWIPMarketplace is IMarketplace {
         _token.transferFrom(buyer, teamWallet, tokenAmount / 100);
 
         IBEP721(listing.collection).transferFrom(seller, buyer, listing.tokenId); //TBD use safeTransferFrom()?
-        IBEP721(listing.collection).approve(address(0), listing.tokenId);
         listing.forSale = false;
         forsaleItemsCount--;      
         emit Bought(listingId, tokenAmount, true, buyer);
@@ -138,7 +137,6 @@ contract XWIPMarketplace is IMarketplace {
         }
 
         IBEP721(listing.collection).transferFrom(seller, buyer, listing.tokenId);  //TBD use safeTransferFrom()?
-        IBEP721(listing.collection).approve(address(0), listing.tokenId);
         listing.forSale = false;
         forsaleItemsCount--;
         emit Bought(listingId, listing.price, listing.currencyIsToken, buyer);
