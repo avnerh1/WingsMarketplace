@@ -34,10 +34,15 @@ contract XWIPMarketplace is IMarketplace {
     uint forsaleItemsCount;
     mapping(uint => NFTListing) listings;
 
+    struct NFTListingDesc {
+        uint listingId;
+        NFTListing item;
+    }    
+
     uint private swapLimit = 100000000000;
 
 
-     event Listed(address collection, uint tokenId, uint listingId);
+    event Listed(address collection, uint tokenId, uint listingId);
     event Removed(uint listingId);
     event Bought(uint listingId, uint price, bool priceInTokens, address buyer);
     event Liquiditied(uint token, uint ETH, uint liquidity, uint time);
@@ -128,7 +133,7 @@ contract XWIPMarketplace is IMarketplace {
             IBEP20 _token = IBEP20(token);  
             _token.transfer(seller, tokenAmount * 95 / 100);
             _token.transfer(marketWallet, tokenAmount / 100);
-            _token.transfer(teamWallet, tokenAmount / 100);           
+            _token.transfer(teamWallet, tokenAmount / 100);            
         } else {
             require(msg.value >= listing.price, "Sent amount is smaller than NFT price");
             payable(seller).transfer(msg.value * 95 / 100);
@@ -194,20 +199,21 @@ contract XWIPMarketplace is IMarketplace {
         NFTListing memory item = listings[listingId]; 
         return item;
     }
-    function getAllNFTsByOwner(bool onlyForSale, address owner) external view returns (NFTListing[] memory) {
+    function getAllNFTsByOwner(bool onlyForSale, address owner) external view returns (NFTListingDesc[] memory) {
         uint count;
         for (uint i = 0; i < nextListingIdx; i++) {            
            NFTListing storage item = listings[i]; 
-           if ((!onlyForSale || item.forSale) && (owner==address(0) || IBEP721(item.collection).ownerOf(item.tokenId)==owner)) {
+           if ((onlyForSale==false || item.forSale) && (owner==address(0) || IBEP721(item.collection).ownerOf(item.tokenId)==owner)) {
                 count++;    
            }
         }        
-        NFTListing[] memory result = new NFTListing[](count);
+        NFTListingDesc[] memory result = new NFTListingDesc[](count);
         uint j;
         for (uint i = 0; i < nextListingIdx; i++) {            
            NFTListing storage item = listings[i]; 
-            if ((!onlyForSale || item.forSale) && (owner==address(0) || IBEP721(item.collection).ownerOf(item.tokenId)==owner)) {
-                result[j] = item;
+            if ((onlyForSale==false || item.forSale) && (owner==address(0) || IBEP721(item.collection).ownerOf(item.tokenId)==owner)) {
+                result[j].listingId = i;
+                result[j].item = item;  
                 j++;
             }
         }    
@@ -215,24 +221,26 @@ contract XWIPMarketplace is IMarketplace {
     }    
 
     
-    function getAllNFTsForSale() external view returns (NFTListing[] memory) {
-        NFTListing[] memory result = new NFTListing[](forsaleItemsCount);
+    function getAllNFTsForSale() external view returns (NFTListingDesc[] memory) {
+        NFTListingDesc[] memory result = new NFTListingDesc[](forsaleItemsCount);
         uint j;
         for (uint i = 0; i < nextListingIdx; i++) {
             NFTListing storage item = listings[i]; 
             if (item.forSale) {
-                result[j] = item;
+                result[j].listingId = i;
+                result[j].item = item;                
                 j++;
             }
         }
         return result;        
     }   
 
-    function getAllNFTs() external view returns (NFTListing[] memory) {
-        NFTListing[] memory result = new NFTListing[](nextListingIdx);
+    function getAllNFTs() external view returns (NFTListingDesc[] memory) {
+        NFTListingDesc[] memory result = new NFTListingDesc[](nextListingIdx);
         for (uint i = 0; i < nextListingIdx; i++) {            
             NFTListing storage item = listings[i]; 
-            result[i] = item;
+            result[i].listingId = i;
+            result[i].item = item;
         }
         return result;        
     }   
